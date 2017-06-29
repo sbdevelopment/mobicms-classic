@@ -214,7 +214,8 @@ if ($systemUser->id) {
     if ($new_sys_mail) {
     	$header_params['unread_mails']['system'] = [
     		'name' => _t('System', 'system'),
-		    'count' => $new_sys_mail
+		    'count' => $new_sys_mail,
+		    'link' => '/mail/index.php?act=systems'
 	    ];
     }
 
@@ -229,22 +230,25 @@ if ($systemUser->id) {
     if ($new_mail) {
 	    $header_params['unread_mails']['personal'] = [
 		    'name' => _t('Mail', 'system'),
-		    'count' => $new_mail
+		    'count' => $new_mail,
+		    'link' => '/mail/index.php?act=new'
 	    ];
     }
 
     if ($systemUser->comm_count > $systemUser->comm_old) {
-        $header_params['unread_mails']['guest_book'] = [
+        $header_params['unread_mails']['unread'][] = [
 		    'name' => _t('Guestbook', 'system'),
-		    'count' => ($systemUser->comm_count - $systemUser->comm_old)
+		    'count' => ($systemUser->comm_count - $systemUser->comm_old),
+	        'link' => '/profile/?act=guestbook&amp;user=' . $systemUser->id
 	    ];
     }
 
     $new_album_comm = $db->query('SELECT COUNT(*) FROM `cms_album_files` WHERE `user_id` = ' . $systemUser->id . ' AND `unread_comments` = 1')->fetchColumn();
 
     if ($new_album_comm) {
-	    $header_params['unread_mails']['album_comments'] = [
-		    'name' => _t('Comments', 'album_comments')
+	    $header_params['unread_mails']['unread'][] = [
+		    'name' => _t('Comments', 'album_comments'),
+		    'link' => '/album/index.php?act=top&amp;mod=my_new_comm'
 	    ];
     }
 

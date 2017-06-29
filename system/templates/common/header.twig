@@ -38,7 +38,7 @@
 			<a href="{{ config.home_url }}">{{ personal_links.home.image }} {{ personal_links.home.text }}</a><br>
 		{% endif %}
 		{%  if personal_links.cabinet %}
-			<a href="{{ config.home_url }}">{{ personal_links.cabinet.image }} {{ personal_links.cabinet.user_name }}<small style="color: #a8b5c4">({{ personal_links.cabinet.text }})</small></a><br>
+			<a href="{{ config.home_url }}">{{ personal_links.cabinet.image }} {{ user.name }}<small style="color: #a8b5c4">({{ personal_links.cabinet.text }})</small></a><br>
 		{% endif %}
 		{%  if personal_links.auth %}
 			<a href="{{ config.home_url }}">{{ personal_links.auth.image }} {{ personal_links.auth.text }})</a><br>
@@ -58,8 +58,9 @@
 		{{ if unread_mails }}
 			<div class="rmenu">
 				{{ unread_mails.title }}:
-				{% if unread_mails.system %}
-					<a href="">{{ unread_mails.system.name }} ({{ unread_mails.system.count }})</a>
-				{% endif %}
+				{% for unread in unread_mails.unread %}
+					{% if loop.last %}{% else %},{% endif %}
+					<a href="{{ config.home_url }}{{ unread.link }}">{{ unread.name }}{% if unread.count %}({{ unread.count }}){% endif %}</a>
+				{% endfor %}
 			</div>
 		{% endif %}
