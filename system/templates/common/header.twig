@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="{{ config.lng }}">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0, user-scalable=yes">
+	<meta name="HandheldFriendly" content="true">
+	<meta name="MobileOptimized" content="width">
+	<meta content="yes" name="apple-mobile-web-app-capable">
+	<meta name="Generator" content="mobiCMS, https://mobicms.org">
+	<meta name="keywords" content="{{ seo.keywords }}">
+	<meta name="description" content="{{ seo.description }} ">
+	<link rel="stylesheet" href="{{ config.home_url }}/theme/{{ config.get_skin }} /style.css">
+	<link rel="shortcut icon" href="{{ config.home_url }}/favicon.ico">
+	<link rel="alternate" type="application/rss+xml" title="RSS | {{ titles.rss }} " href="{{ config.home_url}}/rss/">
+	<title>{{ titles.body }}</title>
+	</head><body>
+	{% if cms_ads.header %}
+		{% for ad in cms_ads.header %}
+			<a href="{{ ad.link }}"><span style="color:{{ ad.style }}">{{ ad.name }}</span></a>
+		{% endfor %}
+	{% endif %}
+	<table style="width: 100%;" class="logo">
+		<tr>
+			<td valign="bottom">
+				<a href="{{ config.home_url }}">{{ logo }}</a>
+			</td>
+			<td align="right"><a href="{{ config.home_url }}/go.php?lng"><b>{{ config.locale.name }}</b></a>&#160;<a href="{{ config.locale.name }}/go.php?lng">{{ config.locale.flag }}</a></td>
+		</tr>
+	</table>
+	{#
+	<div class="header">
+		{{ hi_message }}
+	</div>
+	#}
+	<div class="tmn">
+		{%  if personal_links.home %}
+			<a href="{{ config.home_url }}">{{ personal_links.home.image }} {{ personal_links.home.text }}</a><br>
+		{% endif %}
+		{%  if personal_links.cabinet %}
+			<a href="{{ config.home_url }}">{{ personal_links.cabinet.image }} {{ personal_links.cabinet.user_name }}<small style="color: #a8b5c4">({{ personal_links.cabinet.text }})</small></a><br>
+		{% endif %}
+		{%  if personal_links.auth %}
+			<a href="{{ config.home_url }}">{{ personal_links.auth.image }} {{ personal_links.auth.text }})</a><br>
+		{% endif %}
+	</div>
+	<div class="maintxt">
+		{% if cms_ads.content %}
+			<div class="gmenu">
+				{% for ad in cms_ads.page %}
+					<a href="{{ ad.link }}"><span style="color:{{ ad.style }}">{{ ad.name }}</span></a>
+				{% endfor %}
+			</div>
+		{% endif %}
+		{% if ban %}
+		<div class="alarm">{{ ban.text }}&#160;<a href="{{ config.home_url }}/profile/?act=ban">{{ ban.details }}</a></div>
+		{% endif %}
+		{{ if unread_mails }}
+			<div class="rmenu">
+				{{ unread_mails.title }}:
+				{% if unread_mails.system %}
+					<a href="">{{ unread_mails.system.name }} ({{ unread_mails.system.count }})</a>
+				{% endif %}
+			</div>
+		{% endif %}

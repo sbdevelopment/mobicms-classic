@@ -34,23 +34,27 @@ $textl = isset($textl) ? $textl : $config['copyright'];
 $keywords = isset($keywords) ? htmlspecialchars($keywords) : $config->meta_key;
 $descriptions = isset($descriptions) ? htmlspecialchars($descriptions) : $config->meta_desc;
 $header_params = [];
-echo '<!DOCTYPE html>' .
-    "\n" . '<html lang="' . $config->lng . '">' .
-    "\n" . '<head>' .
-    "\n" . '<meta charset="utf-8">' .
-    "\n" . '<meta http-equiv="X-UA-Compatible" content="IE=edge">' .
-    "\n" . '<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0, user-scalable=yes">' .
-    "\n" . '<meta name="HandheldFriendly" content="true">' .
-    "\n" . '<meta name="MobileOptimized" content="width">' .
-    "\n" . '<meta content="yes" name="apple-mobile-web-app-capable">' .
-    "\n" . '<meta name="Generator" content="mobiCMS, https://mobicms.org">' .
-    "\n" . '<meta name="keywords" content="' . $keywords . '">' .
-    "\n" . '<meta name="description" content="' . $descriptions . '">' .
-    "\n" . '<link rel="stylesheet" href="' . $config->homeurl . '/theme/' . $tools->getSkin() . '/style.css">' .
-    "\n" . '<link rel="shortcut icon" href="' . $config->homeurl . '/favicon.ico">' .
-    "\n" . '<link rel="alternate" type="application/rss+xml" title="RSS | ' . _t('Site News', 'system') . '" href="' . $config->homeurl . '/rss/">' .
-    "\n" . '<title>' . $textl . '</title>' .
-    "\n" . '</head><body>';
+
+$header_params['seo'] = [
+	'keywords' => $keywords,
+	'description' => $descriptions
+];
+$header_params['config'] = [
+	'lng' => $config->lng,
+	'home_url' => $config->homeurl,
+	'get_skin' => $tools->getSkin()
+];
+$header_params['titles'] = [
+	'body' => $textl,
+	'rss' =>  _t('Site News', 'system')
+];
+
+if($systemUser->id) {
+	$header_params['user'] = [
+		'id' => $systemUser->id,
+		'name' => $systemUser->name
+	];
+}
 
 // Рекламный модуль
 $cms_ads = [];
@@ -65,21 +69,17 @@ if (!isset($_GET['err']) && $act != '404' && $headmod != 'admin') {
             $name = explode("|", $res['name']);
             $name = htmlentities($name[mt_rand(0, (count($name) - 1))], ENT_QUOTES, 'UTF-8');
 
-            if (!empty($res['color'])) {
-                $name = '<span style="color:#' . $res['color'] . '">' . $name . '</span>';
-            }
-
-            // Если было задано начертание шрифта, то применяем
+            // Если было задано начертание шрифта:
             $font = $res['bold'] ? 'font-weight: bold;' : false;
             $font .= $res['italic'] ? ' font-style:italic;' : false;
             $font .= $res['underline'] ? ' text-decoration:underline;' : false;
 
-            if ($font) {
-                $name = '<span style="' . $font . '">' . $name . '</span>';
-            }
-
-            @$cms_ads[$res['type']] .= '<a href="' . ($res['show'] ? $tools->checkout($res['link']) : $config['homeurl'] . '/go.php?id=' . $res['id']) . '">' . $name . '</a><br>';
-
+            @$cms_ads[$res['type']] = [
+				'name' => $name,
+				'style' => 'color:'.$res['color'].';'.$font,
+				'link' => ($res['show'] ? $tools->checkout($res['link']) : $config['homeurl'] . '/go.php?id=' . $res['id'])
+			];
+            
             if (($res['day'] != 0 && time() >= ($res['time'] + $res['day'] * 3600 * 24))
                 || ($res['count_link'] != 0 && $res['count'] >= $res['count_link'])
             ) {
@@ -91,33 +91,40 @@ if (!isset($_GET['err']) && $act != '404' && $headmod != 'admin') {
 
 // Рекламный блок сайта
 if (isset($cms_ads[0])) {
-    echo $cms_ads[0];
+	$header_params['cms_ads']['header'] = $cms_ads[0];
 }
-
-// Выводим логотип и переключатель языков
-echo '<table style="width: 100%;" class="logo"><tr>' .
-    '<td valign="bottom"><a href="' . $config['homeurl'] . '">' . $tools->image('images/logo.png', ['class' => '']) . '</a></td>';
+// Логотип и переключатель языков
+$header_params['logo'] = $tools->image('images/logo.png', ['class' => '']);
 
 if ($headmod == 'mainpage' && count($config->lng_list) > 1) {
     $locale = App::getTranslator()->getLocale();
-    echo '<td align="right"><a href="' . $config->homeurl . '/go.php?lng"><b>' . strtoupper($locale) . '</b></a>&#160;<a href="' . $config->homeurl . '/go.php?lng">' . $tools->getFlag($locale) . '</a></td>';
+    $header_params['config']['locale'] = [
+    	'name' => strtoupper($locale),
+	    'flag' => $tools->getFlag($locale)
+    ];
 }
 
-echo '</tr></table>';
-
-// Выводим верхний блок с приветствием
-//echo '<div class="header"> ' . _t('Hi', 'system') . ', ' . ($systemUser->id ? '<b>' . $systemUser->name . '</b>!' : _t('Guest', 'system') . '!') . '</div>';
+// Верхний блок с приветствием
+$header_params['hi_message'] = _t('Hi', 'system') . ', ' . ($systemUser->id ? '<b>' . $systemUser->name . '</b>!' : _t('Guest', 'system') . '!');
 
 // Главное меню пользователя
-echo '<div class="tmn">' .
-    (isset($_GET['err']) || $headmod != "mainpage" || ($headmod == 'mainpage' && $act) ? '<a href=\'' . $config['homeurl'] . '\'>' . $tools->image('images/menu_home.png') . _t('Home', 'system') . '</a><br>' : '') .
-    ($systemUser->id && $headmod != 'office' ? '<a href="' . $config['homeurl'] . '/profile/?act=office">' . $tools->image('images/menu_cabinet.png') . $systemUser->name . ' <small style="color: #a8b5c4">(' . _t('Personal', 'system') . ')</small></a><br>' : '') .
-    (!$systemUser->id && $headmod != 'login' ? $tools->image('images/menu_login.png') . '<a href="' . $config['homeurl'] . '/login/">' . _t('Login', 'system') . '</a>' : '') .
-    '</div><div class="maintxt">';
-
+$header_params['personal_links'] = [
+	'home' => (isset($_GET['err']) || $headmod != "mainpage" || ($headmod == 'mainpage' && $act) ? [
+		'image' => $tools->image('images/menu_home.png'),
+		'text' => _t('Home', 'system')
+	] : false),
+	'cabinet' => ($systemUser->id && $headmod != 'office' ? [
+		'image' => $tools->image('images/menu_cabinet.png'),
+		'text' => _t('Personal', 'system'),
+	] : false),
+	'auth' => (!$systemUser->id && $headmod != 'login' ? [
+		'image' => $tools->image('images/menu_login.png'),
+		'text' => _t('Login', 'system')
+	] : false)
+];
 // Рекламный блок сайта
 if (!empty($cms_ads[1])) {
-    echo '<div class="gmenu">' . $cms_ads[1] . '</div>';
+	$header_params['cms_ads']['page'] = $cms_ads[1];
 }
 
 // Фиксация местоположений посетителей
@@ -193,16 +200,22 @@ if ($systemUser->isValid()) {
 
 // Выводим сообщение о Бане
 if (!empty($systemUser->ban)) {
-    echo '<div class="alarm">' . _t('Ban', 'system') . '&#160;<a href="' . $config['homeurl'] . '/profile/?act=ban">' . _t('Details', 'system') . '</a></div>';
+	$header_params['ban'] = [
+		'text' => _t('Ban', 'system'),
+		'details' => _t('Details', 'system')
+	];
 }
 
-// Ссылки на непрочитанное
+// Непрочитанное
 if ($systemUser->id) {
-    $list = [];
+	$header_params['unread_mails'] = [];
     $new_sys_mail = $db->query("SELECT COUNT(*) FROM `cms_mail` WHERE `from_id`='" . $systemUser->id . "' AND `read`='0' AND `sys`='1' AND `delete`!='" . $systemUser->id . "'")->fetchColumn();
 
     if ($new_sys_mail) {
-        $list[] = '<a href="' . $config['homeurl'] . '/mail/index.php?act=systems">' . _t('System', 'system') . '</a> (+' . $new_sys_mail . ')';
+    	$header_params['unread_mails']['system'] = [
+    		'name' => _t('System', 'system'),
+		    'count' => $new_sys_mail
+	    ];
     }
 
     $new_mail = $db->query("SELECT COUNT(*) FROM `cms_mail`
@@ -214,21 +227,29 @@ if ($systemUser->id) {
                             AND `cms_contact`.`ban`!='1'")->fetchColumn();
 
     if ($new_mail) {
-        $list[] = '<a href="' . $config['homeurl'] . '/mail/index.php?act=new">' . _t('Mail', 'system') . '</a> (+' . $new_mail . ')';
+	    $header_params['unread_mails']['personal'] = [
+		    'name' => _t('Mail', 'system'),
+		    'count' => $new_mail
+	    ];
     }
 
     if ($systemUser->comm_count > $systemUser->comm_old) {
-        $list[] = '<a href="' . $config['homeurl'] . '/profile/?act=guestbook&amp;user=' . $systemUser->id . '">' . _t('Guestbook', 'system') . '</a> (' . ($systemUser->comm_count - $systemUser->comm_old) . ')';
+        $header_params['unread_mails']['guest_book'] = [
+		    'name' => _t('Guestbook', 'system'),
+		    'count' => ($systemUser->comm_count - $systemUser->comm_old)
+	    ];
     }
 
     $new_album_comm = $db->query('SELECT COUNT(*) FROM `cms_album_files` WHERE `user_id` = ' . $systemUser->id . ' AND `unread_comments` = 1')->fetchColumn();
 
     if ($new_album_comm) {
-        $list[] = '<a href="' . $config['homeurl'] . '/album/index.php?act=top&amp;mod=my_new_comm">' . _t('Comments', 'system') . '</a>';
+	    $header_params['unread_mails']['album_comments'] = [
+		    'name' => _t('Comments', 'album_comments')
+	    ];
     }
 
-    if (!empty($list)) {
-        echo '<div class="rmenu">' . _t('Unread', 'system') . ': ' . implode(', ', $list) . '</div>';
+    if (count($header_params['unread_mails'])) {
+	    $header_params['unread_mails']['title'] = _t('Unread', 'system');
     }
 }
 
