@@ -27,3 +27,5 @@ system/config/autoload/*.local.php
 dist
 distributive
 node_modules
+
+.idea/*

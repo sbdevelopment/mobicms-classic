@@ -45,4 +45,6 @@ interface ToolsInterface
     public function timecount($var);
 
     public function trans($str); // DEPRECATED!!!
+	
+	public function templateRender($template, $data);
 }

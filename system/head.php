@@ -33,7 +33,7 @@ $headmod = isset($headmod) ? $headmod : '';
 $textl = isset($textl) ? $textl : $config['copyright'];
 $keywords = isset($keywords) ? htmlspecialchars($keywords) : $config->meta_key;
 $descriptions = isset($descriptions) ? htmlspecialchars($descriptions) : $config->meta_desc;
-
+$header_params = [];
 echo '<!DOCTYPE html>' .
     "\n" . '<html lang="' . $config->lng . '">' .
     "\n" . '<head>' .
@@ -231,3 +231,5 @@ if ($systemUser->id) {
         echo '<div class="rmenu">' . _t('Unread', 'system') . ': ' . implode(', ', $list) . '</div>';
     }
 }
+
+$tools->templateRender('header',$header_params);
