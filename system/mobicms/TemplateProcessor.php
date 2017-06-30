@@ -35,9 +35,11 @@ class TemplateProcessor implements Api\TemplateProcessorInterface
 		$this->tplLoader = $loader_filesystem;
 		
 		$this->tplProcessor = new Twig_Environment($this->tplLoader, array(
-			'cache' => false, // $twig_cache, // - позже заменить
+			'cache' => $this->setCacheDirectory('/system/cache/Twig/'),
 			'debug' => true
 		));
+		
+		$this->tplProcessor->addExtension(new \Twig_Extension_Debug());
 	}
 	
 	public function setTemplatesDirectory($dir_path)
@@ -45,29 +47,13 @@ class TemplateProcessor implements Api\TemplateProcessorInterface
 		$this->tpl_path = $_SERVER['DOCUMENT_ROOT'] . $dir_path;
 	}
 	
-	public function setCacheDirectory($dir_path)
-	{
+	private function setCacheDirectory($dir_path){
 		$this->cache_path = $_SERVER['DOCUMENT_ROOT'] . $dir_path;
 	}
 	
 	public function setNamespace($path, $name)
 	{
 		$this->tplLoader->addPath($_SERVER['DOCUMENT_ROOT'] . $path, $name);
-	}
-	
-	public function addExtension($class)
-	{
-		$this->tplProcessor->addExtension($class);
-	}
-	
-	public function getExtensions()
-	{
-		return $this->tplProcessor->getExtensions();
-	}
-	
-	public function setExtensions(array $extensions)
-	{
-		$this->tplProcessor->setExtensions($extensions);
 	}
 	
 	public function templateRender($template,$data){

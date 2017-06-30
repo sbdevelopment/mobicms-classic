@@ -28,40 +28,11 @@ interface TemplateProcessorInterface
 	public function setNamespace($path, $name);
 	
 	/**
-	 * Добавление расширения в шаблонизатор
-	 *
-	 * @param $class - Extension className, ex.: new Class()
-	 */
-	public function addExtension($class);
-	
-	/**
-	 * Возвращает массив с расширениями
-	 * @return array
-	 */
-	public function getExtensions();
-	
-	/**
-	 * Установка пакета рассширений
-	 *
-	 * @param array $extensions [ new ClassFirst(), new ClassLast() ]
-	 *
-	 * @return mixed
-	 */
-	public function setExtensions(array $extensions);
-	
-	/**
 	 * Установка пути для шаблонов
 	 *
 	 * @param string $dir_path - ex. /path/to/templates/
 	 */
 	public function setTemplatesDirectory($dir_path);
-	
-	/**
-	 * Установка пути для кэша
-	 *
-	 * @param string $dir_path - ex. /path/to/cache/
-	 */
-	public function setCacheDirectory($dir_path);
 	
 	/**
 	 * Рендеринг шаблона
