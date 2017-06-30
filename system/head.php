@@ -163,7 +163,10 @@ if ($systemUser->isValid()) {
     // Фиксируем местоположение гостей
     $movings = 0;
     $session = md5($request->ip() . $request->ipViaProxy() . $request->userAgent());
-    $req = $db->query("SELECT * FROM `cms_sessions` WHERE `session_id` = " . $db->quote($session) . " LIMIT 1");
+    $req = $db->query("SELECT * 
+		FROM `cms_sessions` 
+		WHERE `session_id` = " . $db->quote($session) . " 
+		LIMIT 1");
 
     if ($req->rowCount()) {
         // Если есть в базе, то обновляем данные
@@ -209,10 +212,17 @@ if (!empty($systemUser->ban)) {
 // Непрочитанное
 if ($systemUser->id) {
 	$header_params['unread_mails'] = [];
-    $new_sys_mail = $db->query("SELECT COUNT(*) FROM `cms_mail` WHERE `from_id`='" . $systemUser->id . "' AND `read`='0' AND `sys`='1' AND `delete`!='" . $systemUser->id . "'")->fetchColumn();
-
+	$i = 0;
+	
+    $new_sys_mail = $db->query("SELECT COUNT(*) 
+		FROM `cms_mail` 
+		WHERE `from_id`='" . $systemUser->id . "' 
+		AND `read`='0' 
+		AND `sys`='1' 
+		AND `delete`!='" . $systemUser->id . "'")->fetchColumn();
+	
     if ($new_sys_mail) {
-    	$header_params['unread_mails']['system'] = [
+    	$header_params['unread_mails']['unread'][$i++] = [
     		'name' => _t('System', 'system'),
 		    'count' => $new_sys_mail,
 		    'link' => '/mail/index.php?act=systems'
@@ -220,7 +230,9 @@ if ($systemUser->id) {
     }
 
     $new_mail = $db->query("SELECT COUNT(*) FROM `cms_mail`
-                            LEFT JOIN `cms_contact` ON `cms_mail`.`user_id`=`cms_contact`.`from_id` AND `cms_contact`.`user_id`='" . $systemUser->id . "'
+                            	LEFT JOIN `cms_contact` 
+                            	ON `cms_mail`.`user_id`=`cms_contact`.`from_id` 
+                            	AND `cms_contact`.`user_id`='" . $systemUser->id . "'
                             WHERE `cms_mail`.`from_id`='" . $systemUser->id . "'
                             AND `cms_mail`.`sys`='0'
                             AND `cms_mail`.`read`='0'
@@ -228,7 +240,7 @@ if ($systemUser->id) {
                             AND `cms_contact`.`ban`!='1'")->fetchColumn();
 
     if ($new_mail) {
-	    $header_params['unread_mails']['personal'] = [
+	    $header_params['unread_mails']['unread'][$i++] = [
 		    'name' => _t('Mail', 'system'),
 		    'count' => $new_mail,
 		    'link' => '/mail/index.php?act=new'
@@ -236,17 +248,20 @@ if ($systemUser->id) {
     }
 
     if ($systemUser->comm_count > $systemUser->comm_old) {
-        $header_params['unread_mails']['unread'][] = [
+        $header_params['unread_mails']['unread'][$i++] = [
 		    'name' => _t('Guestbook', 'system'),
 		    'count' => ($systemUser->comm_count - $systemUser->comm_old),
 	        'link' => '/profile/?act=guestbook&amp;user=' . $systemUser->id
 	    ];
     }
 
-    $new_album_comm = $db->query('SELECT COUNT(*) FROM `cms_album_files` WHERE `user_id` = ' . $systemUser->id . ' AND `unread_comments` = 1')->fetchColumn();
+    $new_album_comm = $db->query("SELECT COUNT(*) 
+		FROM `cms_album_files` 
+		WHERE `user_id` = '" . $systemUser->id . "' 
+		AND `unread_comments` = 1")->fetchColumn();
 
     if ($new_album_comm) {
-	    $header_params['unread_mails']['unread'][] = [
+	    $header_params['unread_mails']['unread'][$i++] = [
 		    'name' => _t('Comments', 'album_comments'),
 		    'link' => '/album/index.php?act=top&amp;mod=my_new_comm'
 	    ];
