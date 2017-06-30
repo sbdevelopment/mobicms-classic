@@ -165,7 +165,7 @@ if ($systemUser->isValid()) {
     $session = md5($request->ip() . $request->ipViaProxy() . $request->userAgent());
     $req = $db->query("SELECT * 
 		FROM `cms_sessions` 
-		WHERE `session_id` = " . $db->quote($session) . " 
+		WHERE `session_id` = '" . $db->quote($session) . "' 
 		LIMIT 1");
 
     if ($req->rowCount()) {
