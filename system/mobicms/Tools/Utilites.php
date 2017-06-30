@@ -17,8 +17,6 @@ use Mobicms\Api\UserInterface;
 use Mobicms\Checkpoint\UserConfig;
 use Mobicms\Http\Request;
 use Psr\Container\ContainerInterface;
-use Twig_Environment;
-use Twig_Loader_Filesystem;
 
 class Utilites implements ToolsInterface
 {
@@ -51,35 +49,6 @@ class Utilites implements ToolsInterface
      * @var ConfigInterface
      */
     private $config;
-	
-	/**
-	 * @var Twig_Environment
-	 */
-    private $tpl_processor;
-	
-	/**
-	 * Twig Initialisation and configure
-	 */
-	public function __construct() {
-		$twig_tpl = $_SERVER['DOCUMENT_ROOT'] . '/system/templates/';
-		//$twig_cache = $_SERVER['DOCUMENT_ROOT'] . '/system/cache/Twig/';
-		
-		// Подключаемся к твигу:
-		$loader = new Twig_Loader_Filesystem($twig_tpl);
-		
-		// Добавляем неймспейсы для доступа к шаблонам, ex.: {% use '@common/header.twig' %}
-		$loader->addPath($_SERVER['DOCUMENT_ROOT'] . '/system/templates/common', 'common');
-		$loader->addPath($_SERVER['DOCUMENT_ROOT'] . '/system/templates/blocks', 'blocks');
-		$loader->addPath($_SERVER['DOCUMENT_ROOT'] . '/system/templates/content', 'content');
-		
-		$this->tpl_processor = new Twig_Environment($loader, array(
-			'cache' => false, // $twig_cache, // - позже заменить
-			'debug' => true
-		));
-		
-		// Добавляем расширение Дебагер твигу:
-		$this->tpl_processor->addExtension(new \Twig_Extension_Debug());
-	}
 
     public function __invoke(ContainerInterface $container)
     {
@@ -500,7 +469,7 @@ class Utilites implements ToolsInterface
      * Получаем данные пользователя
      *
      * @param int $id Идентификатор пользователя
-     * @return array|bool
+     * @return array|bool|object
      */
     public function getUser($id = 0)
     {
@@ -734,14 +703,4 @@ class Utilites implements ToolsInterface
         return strtr($str, $replace);
     }
 	
-	/**
-	 * Рендеринг шаблона
-	 * @param string $template
-	 * @param array $data
-	 *
-	 * @return string HTML
-	 */
-	public function templateRender($template,$data){
-		return $this->tpl_processor->render($template.'.twig',$data);
-	}
 }

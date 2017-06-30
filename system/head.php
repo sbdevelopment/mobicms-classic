@@ -28,6 +28,9 @@ $systemUser = $container->get(Mobicms\Api\UserInterface::class);
 /** @var Mobicms\Api\ConfigInterface $config */
 $config = $container->get(Mobicms\Api\ConfigInterface::class);
 
+/** @var Mobicms\Api\TemplateProcessorInterface $tplProcessor */
+$tplProcessor = $container->get(Mobicms\Api\TemplateProcessorInterface::class);
+
 $act = isset($_REQUEST['act']) ? trim($_REQUEST['act']) : '';
 $headmod = isset($headmod) ? $headmod : '';
 $textl = isset($textl) ? $textl : $config['copyright'];
@@ -272,4 +275,4 @@ if ($systemUser->id) {
     }
 }
 
-$tools->templateRender('header',$header_params);
+$tplProcessor->templateRender('header',$header_params);

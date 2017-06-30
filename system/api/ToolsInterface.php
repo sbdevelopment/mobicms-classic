@@ -46,5 +46,4 @@ interface ToolsInterface
 
     public function trans($str); // DEPRECATED!!!
 	
-	public function templateRender($template, $data);
 }
