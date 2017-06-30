@@ -21,8 +21,8 @@ interface TemplateProcessorInterface
 	/**
 	 * Установка неймспейсов, для работы с ними в шаблонах
 	 *
-	 * @param string $path
-	 * @param string $name
+	 * @param string $path - например, /path/to/namespace/common/
+	 * @param string $name - например, common; используйте в twig как {% use '@common/template.twig' %}
 	 *
 	 */
 	public function setNamespace($path, $name);
@@ -52,14 +52,14 @@ interface TemplateProcessorInterface
 	/**
 	 * Установка пути для шаблонов
 	 *
-	 * @param string $dir_path
+	 * @param string $dir_path - ex. /path/to/templates/
 	 */
 	public function setTemplatesDirectory($dir_path);
 	
 	/**
 	 * Установка пути для кэша
 	 *
-	 * @param string $dir_path
+	 * @param string $dir_path - ex. /path/to/cache/
 	 */
 	public function setCacheDirectory($dir_path);
 	
