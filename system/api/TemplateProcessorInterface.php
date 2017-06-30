@@ -35,6 +35,21 @@ interface TemplateProcessorInterface
 	public function addExtension($class);
 	
 	/**
+	 * Возвращает массив с расширениями
+	 * @return array
+	 */
+	public function getExtensions();
+	
+	/**
+	 * Установка пакета рассширений
+	 *
+	 * @param array $extensions [ new ClassFirst(), new ClassLast() ]
+	 *
+	 * @return mixed
+	 */
+	public function setExtensions(array $extensions);
+	
+	/**
 	 * Установка пути для шаблонов
 	 *
 	 * @param string $dir_path

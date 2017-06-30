@@ -60,6 +60,16 @@ class TemplateProcessor implements Api\TemplateProcessorInterface
 		$this->tplProcessor->addExtension($class);
 	}
 	
+	public function getExtensions()
+	{
+		return $this->tplProcessor->getExtensions();
+	}
+	
+	public function setExtensions(array $extensions)
+	{
+		$this->tplProcessor->setExtensions($extensions);
+	}
+	
 	public function templateRender($template,$data){
 		return $this->tplProcessor->render($template.'.twig',$data);
 	}
