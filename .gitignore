@@ -20,7 +20,7 @@ uploads/*
 !uploads/users/photo/index.php
 
 system/cache/*
-!system/cache/.gitkeep
+!system/cache/Twig/.gitkeep
 system/vendor
 system/config/autoload/*.local.php
 
