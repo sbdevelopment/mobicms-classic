@@ -66,4 +66,6 @@ interface UserInterface
     public function isValid();
 
     public function getConfig();
+    
+    public function setUserPosition();
 }

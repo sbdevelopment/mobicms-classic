@@ -287,4 +287,37 @@ class Counters
 
         return $total . ($new ? '&#160;/&#160;<span class="red">+' . $new . '</span>' : '');
     }
+    
+    public function unread($type)
+    {
+	    $count = 0;
+    	switch ($type) {
+		    case 'sys_mail':
+			    $count = $this->db->query("SELECT COUNT(*)
+				FROM `cms_mail` 
+				WHERE `from_id`='" . $this->systemUser->id . "' 
+				AND `read`='0' 
+				AND `sys`='1' 
+				AND `delete`!='" . $this->systemUser->id . "'")->fetchColumn();
+	        break;
+		    case 'mail':
+		    	$count = $this->db->query("SELECT COUNT(*) FROM `cms_mail`
+	                LEFT JOIN `cms_contact` 
+	                ON `cms_mail`.`user_id`=`cms_contact`.`from_id` 
+	                AND `cms_contact`.`user_id`='" . $this->systemUser->id . "'
+	            WHERE `cms_mail`.`from_id`='" . $this->systemUser->id . "'
+	            AND `cms_mail`.`sys`='0'
+	            AND `cms_mail`.`read`='0'
+	            AND `cms_mail`.`delete`!='" . $this->systemUser->id . "'
+	            AND `cms_contact`.`ban`!='1'")->fetchColumn();
+		    break;
+		    case 'album_comm':
+			    $count = $this->db->query("SELECT COUNT(*) 
+				FROM `cms_album_files` 
+				WHERE `user_id` = '" . $this->systemUser->id . "' 
+				AND `unread_comments` = 1")->fetchColumn();
+	        break;
+	    }
+	    return $count;
+    }
 }

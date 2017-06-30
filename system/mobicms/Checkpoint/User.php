@@ -12,19 +12,48 @@ namespace Mobicms\Checkpoint;
 
 use Mobicms\Api\UserInterface;
 use Zend\Stdlib\ArrayObject;
+use Psr\Container\ContainerInterface;
+use Mobicms\Http\Request;
 
 class User extends ArrayObject implements UserInterface
 {
+	
+	/**
+	 * @var \PDO
+	 */
+	private $db;
+	
     private $userConfigObject;
-
+	
+	/**
+	 * @var ContainerInterface
+	 */
+	private $container;
+	
+	/**
+	 * @var UserInterface
+	 */
+	private $systemUser;
+	
+	/**
+	 * @var Request
+	 */
+	private $request;
+	
     /**
      * User constructor.
      *
      * @param array $input
+     * @param $container
      */
-    public function __construct(array $input)
+    public function __construct(array $input, ContainerInterface $container)
     {
         parent::__construct($input, parent::ARRAY_AS_PROPS);
+        
+	    $this->container = $container;
+	    $this->db = $this->container->get(\PDO::class);
+	    $this->request = $this->container->get(Request::class);
+	    $this->systemUser = $this->container->get(UserInterface::class);
     }
 
     /**
@@ -55,5 +84,81 @@ class User extends ArrayObject implements UserInterface
         }
 
         return $this->userConfigObject;
+    }
+    
+    public function setUserPosition()
+    {
+	    $head_mod = isset($head_mod) ? $head_mod : '';
+	    $sql = '';
+	
+	    if ($this->systemUser->isValid()) {
+		    // Фиксируем местоположение авторизованных
+		    $movings = $this->systemUser->movings;
+		
+		    if ($this->systemUser->lastdate < (time() - 300)) {
+			    $movings = 0;
+			    $sql .= " `sestime` = " . time() . ", ";
+		    }
+		
+		    if ($this->systemUser->place != $head_mod) {
+			    ++$movings;
+			    $sql .= " `place` = " . $this->db->quote($head_mod) . ", ";
+		    }
+		
+		    if ($this->systemUser->browser != $this->request->userAgent()) {
+			    $sql .= " `browser` = " . $this->db->quote($this->request->userAgent()) . ", ";
+		    }
+		
+		    $totalonsite = $this->systemUser->total_on_site;
+		
+		    if ($this->systemUser->lastdate > (time() - 300)) {
+			    $totalonsite = $totalonsite + time() - $this->systemUser->lastdate;
+		    }
+		
+		    $this->db->query("UPDATE `users` SET $sql
+		        `movings` = '$movings',
+		        `total_on_site` = '$totalonsite',
+		        `lastdate` = '" . time() . "'
+		        WHERE `id` = " . $this->systemUser->id);
+	    } else {
+		    // Фиксируем местоположение гостей
+		    
+		    $session = md5($this->request->ip() . $this->request->ipViaProxy() . $this->request->userAgent());
+		    $req = $this->db->query("SELECT * 
+				FROM `cms_sessions` 
+				WHERE `session_id` = '" . $this->db->quote($session) . "' 
+				LIMIT 1");
+		
+		    if ($req->rowCount()) {
+			    // Если есть в базе, то обновляем данные
+			    $res = $req->fetch();
+			    $movings = ++$res['movings'];
+			
+			    if ($res['sestime'] < (time() - 300)) {
+				    $movings = 1;
+				    $sql .= " `sestime` = '" . time() . "', ";
+			    }
+			
+			    if ($res['place'] != $head_mod) {
+				    $sql .= " `place` = " . $this->db->quote($head_mod) . ", ";
+			    }
+			
+			    $this->db->exec("UPDATE `cms_sessions` SET $sql
+		            `movings` = '$movings',
+		            `lastdate` = '" . time() . "'
+		            WHERE `session_id` = " . $this->db->quote($session) . "
+		        ");
+		    } else {
+			    // Если еще небыло в базе, то добавляем запись
+			    $this->db->exec("INSERT INTO `cms_sessions` SET
+		            `session_id` = '" . $session . "',
+		            `ip` = '" . $this->request->ip() . "',
+		            `ip_via_proxy` = '" . $this->request->ipViaProxy() . "',
+		            `browser` = " . $this->db->quote($this->request->userAgent()) . ",
+		            `lastdate` = '" . time() . "',
+		            `sestime` = '" . time() . "',
+		            `place` = " . $this->db->quote($head_mod));
+		    }
+	    }
     }
 }
